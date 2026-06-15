@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --color-butter: #ffefb3;
+  --color-butter-light: #fff9e3;
+  --color-butter-dark: #e6d38e;
+  
+  --color-darkgreen: #013e37;
+  --color-darkgreen-light: #0a5c52;
+  --color-darkgreen-dark: #002420;
+  --color-darkgreen-muted: #022e29;
+  
+  --font-sans: 'Outfit', 'Inter', 'system-ui', 'sans-serif';
+}
+
+@layer base {
+  body {
+    @apply bg-darkgreen text-gray-100 font-sans antialiased min-h-screen overflow-x-hidden selection:bg-butter selection:text-darkgreen;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(10, 92, 82, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(255, 239, 179, 0.05) 0px, transparent 50%);
+  }
+
+  #root {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    min-height: 100vh !important;
+    display: block !important;
+    text-align: left !important;
+  }
+}
+
+/* Custom Glassmorphism styles */
+.glass-card {
+  background: rgba(10, 92, 82, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 239, 179, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 37, 33, 0.3);
+}
+
+.glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+  background: rgba(10, 92, 82, 0.25);
+  border-color: rgba(255, 239, 179, 0.2);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px 0 rgba(255, 239, 179, 0.08);
+}
+
+.glass-input {
+  background: rgba(0, 36, 32, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 239, 179, 0.1);
+  transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+  background: rgba(0, 36, 32, 0.6);
+  border-color: #ffefb3;
+  box-shadow: 0 0 15px rgba(255, 239, 179, 0.15);
+  outline: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #002420;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(10, 92, 82, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffefb3;
+}
+
+/* Keyframe animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 8s infinite ease-in-out;
+}
+
+@keyframes textStreaming {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
