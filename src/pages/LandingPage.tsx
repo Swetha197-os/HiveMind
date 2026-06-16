@@ -1,9 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Brain, ArrowRight, Zap, Combine, ShieldCheck } from 'lucide-react';
+import { Brain, ArrowRight, Zap, Combine, ShieldCheck, UserPlus, LogIn } from 'lucide-react';
+import { useAuth } from '../utils/AuthContext';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAuthSetup } = useAuth();
 
   return (
     <div className="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden">
@@ -37,17 +39,63 @@ export const LandingPage: React.FC = () => {
         </div>
 
         {/* CTA Button */}
-        <div>
-          <button
-            onClick={() => navigate('/compare')}
-            className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-darkgreen bg-butter rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,239,179,0.6)] focus:outline-none focus:ring-2 focus:ring-butter focus:ring-offset-2 focus:ring-offset-darkgreen active:scale-95"
-          >
-            <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
-            <span className="relative flex items-center gap-2">
-              Start Comparing
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </button>
+        <div className="flex flex-col items-center gap-6">
+          {user ? (
+            <button
+              onClick={() => navigate('/compare')}
+              className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-darkgreen bg-butter rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,239,179,0.6)] focus:outline-none focus:ring-2 focus:ring-butter focus:ring-offset-2 focus:ring-offset-darkgreen active:scale-95"
+            >
+              <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+              <span className="relative flex items-center gap-2">
+                Start Comparing
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </span>
+            </button>
+          ) : !isAuthSetup ? (
+            <div className="flex flex-col items-center gap-4">
+              <button
+                onClick={() => navigate('/compare')}
+                className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-darkgreen bg-butter rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,239,179,0.6)] focus:outline-none focus:ring-2 focus:ring-butter focus:ring-offset-2 focus:ring-offset-darkgreen active:scale-95"
+              >
+                <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+                <span className="relative flex items-center gap-2">
+                  Start Comparing
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </button>
+              <p className="text-sm text-gray-400 font-medium">
+                No account required. Explore HiveMind instantly.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="flex items-center gap-2 px-8 py-3.5 font-bold text-darkgreen bg-butter rounded-full transition-all duration-300 hover:scale-105 shadow-[0_0_20px_-5px_rgba(255,239,179,0.4)]"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  Sign Up
+                </button>
+                
+                <button
+                  onClick={() => navigate('/login')}
+                  className="flex items-center gap-2 px-8 py-3.5 font-bold text-butter border border-butter/30 bg-darkgreen rounded-full transition-all duration-300 hover:bg-butter/10 hover:scale-105"
+                >
+                  <LogIn className="w-5 h-5" />
+                  Log In
+                </button>
+                
+                <button
+                  onClick={() => navigate('/compare')}
+                  className="flex items-center gap-2 px-6 py-3.5 font-medium text-gray-300 hover:text-white transition-all duration-300"
+                >
+                  Continue as Guest
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Feature Highlights */}

@@ -4,8 +4,10 @@ import { useHiveMind } from '../utils/HiveMindContext';
 import { ModelSelector } from '../components/ModelSelector';
 import { QuestionInput } from '../components/QuestionInput';
 import { BrainCircuit, History, Bookmark, Trash2, ArrowRight } from 'lucide-react';
+import { useAuth } from '../utils/AuthContext';
 
 export const HomePage: React.FC = () => {
+  const { user } = useAuth();
   const {
     question,
     setQuestion,
@@ -103,10 +105,15 @@ export const HomePage: React.FC = () => {
           <div className="p-6 rounded-2xl glass-card border-butter/10 space-y-4 max-h-[360px] overflow-y-auto flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-                <h3 className="text-sm font-semibold text-butter uppercase tracking-wider flex items-center gap-2">
-                  <History className="w-4 h-4" />
-                  <span>Recent Comparison logs</span>
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-butter uppercase tracking-wider flex items-center gap-2">
+                    <History className="w-4 h-4" />
+                    <span>Recent Logs</span>
+                  </h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-medium border border-gray-700 bg-gray-800 text-gray-300">
+                    {user ? 'Cloud History' : 'Guest History'}
+                  </span>
+                </div>
                 {history.length > 0 && (
                   <button 
                     onClick={clearAllData}

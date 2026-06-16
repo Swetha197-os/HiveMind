@@ -34,6 +34,9 @@ const fetchNativeGeminiResponse = async (question: string): Promise<{ answer: st
     if (response.status === 429) {
       throw new Error('429 Quota Exceeded');
     }
+    if (response.status === 503) {
+      throw new Error('503 Service Unavailable');
+    }
     const errorText = await response.text();
     throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
   }
@@ -163,15 +166,22 @@ export const fetchAIModelResponse = async (
       usedFallback
     };
   } catch (err: any) {
+    console.error(`[AI Service] Error for ${modelId}:`, err);
     const errMsg = err?.message?.toLowerCase() || '';
     const isQuota = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('exhausted') || errMsg.includes('rate limit');
+    const isBusy = errMsg.includes('503') || errMsg.includes('unavailable') || errMsg.includes('high demand') || errMsg.includes('overloaded');
     
+    let finalAnswer = (err?.message || 'Failed to fetch model response.');
+    if (isQuota) {
+      finalAnswer = "Today's free limit is over for this model. Please try again later.";
+    } else if (isBusy) {
+      finalAnswer = `${modelConfig?.name || 'This model'} is temporarily busy. Please try again later.`;
+    }
+
     return {
       modelId,
       status: 'error',
-      answer: isQuota 
-        ? "Today's free limit is over for this model. Please try again later." 
-        : (err?.message || 'Failed to fetch model response.')
+      answer: finalAnswer
     };
   }
 };

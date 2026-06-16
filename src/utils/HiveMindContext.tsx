@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ModelId, ModelResponse, AnalysisReport, ComparisonSession } from '../types';
 import { fetchAIModelResponse } from './aiService';
 import { analyzeResponses } from './consensusAnalyzer';
+import { useAuth } from './AuthContext';
+import { db } from './firebase';
+import { collection, addDoc, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
 
 interface BookmarkItem {
   id: string;
@@ -43,23 +46,62 @@ export const HiveMindProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [modelHealth, setModelHealth] = useState<Record<string, { status: 'available' | 'slow' | 'unavailable' | 'unknown'; latency: number }>>({});
 
-  // Load history & bookmarks on startup
-  useEffect(() => {
-    const savedHistory = localStorage.getItem('hivemind_history');
-    if (savedHistory) {
-      try { setHistory(JSON.parse(savedHistory)); } catch (e) { console.error(e); }
-    }
-    const savedBookmarks = localStorage.getItem('hivemind_bookmarks');
-    if (savedBookmarks) {
-      try { setBookmarks(JSON.parse(savedBookmarks)); } catch (e) { console.error(e); }
-    }
-  }, []);
+  const { user } = useAuth();
 
-  // Save history & bookmarks when modified
-  const saveHistory = (newHistory: ComparisonSession[]) => {
-    setHistory(newHistory);
-    localStorage.setItem('hivemind_history', JSON.stringify(newHistory));
-  };
+  // Load history & bookmarks on startup and auth state change
+  useEffect(() => {
+    // 1. Instantly nuke state on any auth change to prevent UI flickering or stale reads
+    setHistory([]);
+    
+    const loadData = async () => {
+      console.log(`[History] Loading history. Auth state: ${user ? 'Authenticated' : 'Guest'}`);
+      
+      const savedBookmarks = localStorage.getItem('hivemind_bookmarks');
+      if (savedBookmarks) {
+        try { setBookmarks(JSON.parse(savedBookmarks)); } catch (e) { console.error(e); }
+      }
+
+      if (user && db) {
+        // Authenticated user: Load ONLY from Firestore
+        console.log(`[History] Loading Firestore history for user: ${user.uid}`);
+        try {
+          const q = query(
+            collection(db, 'users', user.uid, 'comparisons'),
+            orderBy('timestamp', 'desc')
+          );
+          const querySnapshot = await getDocs(q);
+          const firestoreHistory: ComparisonSession[] = [];
+          querySnapshot.forEach((doc) => {
+            firestoreHistory.push({ ...doc.data(), id: doc.id } as ComparisonSession);
+          });
+          
+          console.log(`[History] Loaded ${firestoreHistory.length} comparisons from Firestore.`);
+          setHistory(firestoreHistory);
+        } catch (err) {
+          console.error('[History] Failed to load history from Firestore:', err);
+          setHistory([]);
+        }
+      } else {
+        // Guest user: Load ONLY from localStorage
+        console.log('[History] Loading Guest history from localStorage.');
+        const savedHistory = localStorage.getItem('hivemind_guest_history');
+        if (savedHistory) {
+          try { 
+            const parsed = JSON.parse(savedHistory);
+            console.log(`[History] Loaded ${parsed.length} comparisons from localStorage.`);
+            setHistory(parsed); 
+          } catch (e) { 
+            console.error(e);
+            setHistory([]);
+          }
+        } else {
+          setHistory([]);
+        }
+      }
+    };
+    
+    loadData();
+  }, [user]);
 
   const saveBookmarks = (newBookmarks: BookmarkItem[]) => {
     setBookmarks(newBookmarks);
@@ -106,15 +148,12 @@ export const HiveMindProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
         return res;
       } catch (err: any) {
-        const errMsg = err?.message?.toLowerCase() || '';
-        const isQuota = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('exhausted') || errMsg.includes('rate limit');
-        
+        // Fallback for completely unexpected thrown errors that escaped aiService
+        console.error(`[Context] Unexpected error fetching ${mId}:`, err);
         const errRes: ModelResponse = {
           modelId: mId,
           status: 'error',
-          answer: isQuota 
-            ? "Today's free limit is over for this model. Please try again later." 
-            : `An error occurred: ${err.message || 'Unknown error'}`
+          answer: `An unexpected error occurred: ${err.message || 'Unknown error'}`
         };
         setResponses((prev) => ({
           ...prev,
@@ -149,7 +188,26 @@ export const HiveMindProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       analysis: analysisReport,
       timestamp: Date.now()
     };
-    saveHistory([newSession, ...history]);
+    const updatedHistory = [newSession, ...history];
+    setHistory(updatedHistory);
+
+    if (user && db) {
+      // Save to Firestore if authenticated
+      try {
+        await addDoc(collection(db, 'users', user.uid, 'comparisons'), {
+          ...newSession,
+          userId: user.uid,
+          createdAt: Timestamp.now()
+        });
+        console.log(`[History] Saved comparison to Firestore for user: ${user.uid}`);
+      } catch (err) {
+        console.error('[History] Failed to save session to Firestore:', err);
+      }
+    } else {
+      // Save to localStorage if guest
+      localStorage.setItem('hivemind_guest_history', JSON.stringify(updatedHistory));
+      console.log(`[History] Saved comparison to localStorage for Guest.`);
+    }
   };
 
   const toggleBookmark = (q: string, modelId: ModelId, modelName: string, answer: string) => {
@@ -184,7 +242,7 @@ export const HiveMindProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const clearAllData = () => {
     setHistory([]);
     setBookmarks([]);
-    localStorage.removeItem('hivemind_history');
+    localStorage.removeItem('hivemind_guest_history');
     localStorage.removeItem('hivemind_bookmarks');
   };
 
