@@ -6,108 +6,115 @@ const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
 /**
- * Executes a native Google Gemini API request.
+ * Executes an AI request via the local Express backend, falling back to direct API calls if unavailable.
  */
-const fetchNativeGeminiResponse = async (question: string): Promise<{ answer: string; tokens: number }> => {
-  if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API key missing (VITE_GEMINI_API_KEY not configured in .env).');
-  }
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-    {
+const fetchFromBackend = async (provider: 'gemini' | 'openrouter', modelId: string, question: string): Promise<{ answer: string; tokens: number }> => {
+  try {
+    console.log("Using backend proxy:", "http://localhost:3001/api/chat");
+    const response = await fetch('http://localhost:3001/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: question }]
-          }
-        ]
-      })
-    }
-  );
+      body: JSON.stringify({ provider, modelId, question })
+    });
 
-  if (!response.ok) {
-    if (response.status === 429) {
-      throw new Error('429 Quota Exceeded');
+    if (!response.ok) {
+      const errData = await response.json().catch(() => null);
+      throw new Error(errData?.error || `Backend error: ${response.status}`);
     }
-    if (response.status === 503) {
-      throw new Error('503 Service Unavailable');
+
+    const data = await response.json();
+    return { answer: data.content, tokens: data.tokenUsage };
+  } catch (err: any) {
+    if (err.message === 'Failed to fetch' || err.message.includes('ERR_CONNECTION_REFUSED')) {
+      throw new Error('BACKEND_DOWN');
     }
-    const errorText = await response.text();
-    throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
+    throw err;
   }
+};
 
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  
-  if (!text) {
-    throw new Error('Invalid or empty response structure received from Gemini API.');
+/**
+ * Executes a native Google Gemini API request.
+ */
+const fetchNativeGeminiResponse = async (question: string): Promise<{ answer: string; tokens: number }> => {
+  try {
+    return await fetchFromBackend('gemini', 'gemini', question);
+  } catch (err: any) {
+    if (err.message !== 'BACKEND_DOWN') throw err;
+    
+    // Fallback to direct API
+    if (!GEMINI_API_KEY) {
+      throw new Error('AI backend is not running. Please start the backend server.');
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: question }] }] })
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 429) throw new Error('429 Quota Exceeded');
+      if (response.status === 503) throw new Error('503 Service Unavailable');
+      const errorText = await response.text();
+      throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error('Invalid or empty response structure received from Gemini API.');
+    const tokenCount = data.usageMetadata?.candidatesTokenCount || Math.ceil(text.length / 4);
+    return { answer: text, tokens: tokenCount };
   }
-
-  // Estimate tokens if usage metadata is missing from the payload
-  const tokenCount = data.usageMetadata?.candidatesTokenCount || Math.ceil(text.length / 4);
-
-  return { answer: text, tokens: tokenCount };
 };
 
 /**
  * Executes an OpenRouter API request.
  */
 export const fetchOpenRouterResponse = async (modelId: string, question: string): Promise<{ answer: string; tokens: number }> => {
-  if (!OPENROUTER_API_KEY) {
-    throw new Error('OpenRouter API key missing (VITE_OPENROUTER_API_KEY not configured in .env).');
-  }
+  try {
+    return await fetchFromBackend('openrouter', modelId, question);
+  } catch (err: any) {
+    if (err.message !== 'BACKEND_DOWN') throw err;
 
-  const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-  console.log("Final OpenRouter URL:", OPENROUTER_URL);
-  console.log("Model:", modelId);
-  console.log("OpenRouter key exists:", !!OPENROUTER_API_KEY);
-
-  const response = await fetch(OPENROUTER_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'http://localhost:5173',
-      'X-Title': 'HiveMind'
-    },
-    body: JSON.stringify({
-      model: modelId,
-      messages: [{ role: 'user', content: question }]
-    })
-  });
-
-  console.log("Response Status:", response.status);
-  console.log("Response Status Text:", response.statusText);
-
-  if (!response.ok) {
-    if (response.status === 429) {
-      throw new Error('429 Quota Exceeded');
+    // Fallback to direct API
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('AI backend is not running. Please start the backend server.');
     }
-    let errorDetails = '';
-    try {
-      const errorJson = await response.json();
-      errorDetails = JSON.stringify(errorJson, null, 2);
-    } catch(e) {
-      errorDetails = await response.text();
+
+    const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+    const response = await fetch(OPENROUTER_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:5173',
+        'X-Title': 'HiveMind'
+      },
+      body: JSON.stringify({ model: modelId, messages: [{ role: 'user', content: question }] })
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) throw new Error('429 Quota Exceeded');
+      let errorDetails = '';
+      try {
+        errorDetails = JSON.stringify(await response.json(), null, 2);
+      } catch(e) {
+        errorDetails = await response.text();
+      }
+      throw new Error(`OpenRouter API error ${response.status} (${response.statusText}):\n${errorDetails}`);
     }
-    throw new Error(`OpenRouter API error ${response.status} (${response.statusText}):\n${errorDetails}`);
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Invalid or empty response structure received from OpenRouter API.');
+    const tokenCount = data.usage?.completion_tokens || Math.ceil(text.length / 4);
+    return { answer: text, tokens: tokenCount };
   }
-
-  const data = await response.json();
-  const text = data.choices?.[0]?.message?.content;
-
-  if (!text) {
-    throw new Error('Invalid or empty response structure received from OpenRouter API.');
-  }
-
-  const tokenCount = data.usage?.completion_tokens || Math.ceil(text.length / 4);
-
-  return { answer: text, tokens: tokenCount };
 };
 
 /**
@@ -176,6 +183,8 @@ export const fetchAIModelResponse = async (
       finalAnswer = "Today's free limit is over for this model. Please try again later.";
     } else if (isBusy) {
       finalAnswer = `${modelConfig?.name || 'This model'} is temporarily busy. Please try again later.`;
+    } else if (errMsg.includes('backend is not running')) {
+      finalAnswer = "AI backend is not running. Please start the backend server.";
     }
 
     return {
