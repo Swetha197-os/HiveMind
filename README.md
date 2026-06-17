@@ -8,7 +8,7 @@ HiveMind is a multi-AI comparison platform that allows users to query multiple A
 
 Download the latest Android APK:
 
-📱 [Download HiveMind APK](https://github.com/Swetha197-os/HiveMind/releases/tag/v1.0)
+📱 [Download HiveMind APK](https://github.com/Swetha197-os/HiveMind/releases/download/v1.0/HiveMind.apk)
 
 ## 🚀 Features
 
