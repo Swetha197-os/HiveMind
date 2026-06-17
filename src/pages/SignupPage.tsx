@@ -17,7 +17,7 @@ export const SignupPage: React.FC = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!auth || !isAuthSetup) {
       setError('Authentication is not configured.');
       return;
@@ -54,7 +54,7 @@ export const SignupPage: React.FC = () => {
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-md glass-card rounded-2xl p-8 border border-butter/10 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-butter/20 via-butter to-green-400"></div>
-        
+
         <div className="flex flex-col items-center mb-8">
           <div className="p-3 bg-darkgreen rounded-xl border border-butter/20 mb-4 shadow-[0_0_15px_rgba(255,239,179,0.15)]">
             <Brain className="w-8 h-8 text-butter" />
@@ -79,7 +79,7 @@ export const SignupPage: React.FC = () => {
               onChange={(e) => setName(e.target.value)}
               required
               className="w-full bg-[#001f1c] border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-butter focus:ring-1 focus:ring-butter transition-all"
-              placeholder="Swetha"
+              placeholder="Your Name"
             />
           </div>
 
