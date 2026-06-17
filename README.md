@@ -1,44 +1,200 @@
-# HiveMind - Multi-AI Consensus Engine
+# 🧠 HiveMind
 
-HiveMind is a premium SaaS-style AI Comparison application that allows you to query multiple AI models simultaneously, cluster similar responses, analyze their differences, and generate a synthesized consolidated answer (Queen Answer).
+### One Question. Many Minds. One Consensus.
 
-> [!IMPORTANT]
-> This app uses real AI APIs through OpenRouter/Gemini. Add API keys in `.env` to start comparing.
+HiveMind is a multi-AI comparison platform that allows users to query multiple AI models simultaneously, compare responses, analyze consensus, and identify unique perspectives. The platform combines responses from different models into a unified analysis experience while maintaining user-specific cloud history.
+
+## 📱 APK Download
+
+Download the latest Android APK:
+
+📱 [Download HiveMind APK](https://github.com/Swetha197-os/HiveMind/releases/tag/v1.0)
+
+## 🚀 Features
+
+* Multi-AI response comparison
+* Consensus analysis and grouping
+* Hive Agreement Score
+* Queen Answer synthesis
+* User authentication
+* Cloud-based history storage
+* Guest mode support
+* Android APK support
+* Secure backend API proxy
+* Responsive mobile-friendly UI
+
+## 📸 Screenshots
+
+### Landing Page
+
+![Landing Page](screenshots/landing.png)
+
+### AI Comparison
+
+![AI Comparison](screenshots/comparison.png)
+
+### Consensus Analysis
+
+![Consensus Analysis](screenshots/analysis.png)
+
+### Grouping
+
+![Grouping](screenshots/grouping.png)
+
+## 🎥 Demo
+
+▶️ [Watch Demo Video](https://github.com/Swetha197-os/HiveMind/releases/download/v1.0/HiveMind_Demo.mp4)
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+
+### Backend
+
+* Node.js
+* Express.js
+
+### Authentication
+
+* Firebase Authentication
+
+### Database
+
+* Cloud Firestore
+
+### AI Services
+
+* OpenRouter API
+* Google Gemini API
+
+### Mobile
+
+* Capacitor
+* Android Studio
 
 ---
 
-## Getting Started
+## 🏗️ Architecture
 
-### 1. Configure Credentials
-Create a `.env` file in the root directory:
-```env
-VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
+```text
+Android App / Web App
+          │
+          ▼
+     React Frontend
+          │
+          ▼
+    Express Backend
+          │
+ ┌────────┴────────┐
+ ▼                 ▼
+OpenRouter      Gemini
+          │
+          ▼
+ Firebase Auth + Firestore
 ```
 
-### 2. Supported AI Models
-- **Google Gemini 2.5 Flash** (via native Gemini API endpoint)
-- **Meta Llama 3.1 8B** (via OpenRouter API: `meta-llama/llama-3.1-8b-instruct:free`)
-- **Mistral 7B** (via OpenRouter API: `mistralai/mistral-7b-instruct:free`)
-- **Qwen 2.5 7B** (via OpenRouter API: `qwen/qwen-2.5-7b-instruct:free`)
-- **DeepSeek Chat** (via OpenRouter API: `deepseek/deepseek-chat:free`)
-- **Gemma 2 9B** (via OpenRouter API: `google/gemma-2-9b-it:free`)
-
 ---
 
-## Installation & Commands
+## ⚙️ Setup Instructions
+
+### Clone Repository
+
+```bash
+git clone https://github.com/Swetha197-os/HiveMind.git
+cd HiveMind
+```
 
 ### Install Dependencies
+
 ```bash
 npm install
 ```
 
-### Start Local Development Server
+### Frontend Environment
+
+Create a `.env` file:
+
+```env
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+```
+
+### Backend Environment
+
+Create `backend/.env`:
+
+```env
+OPENROUTER_API_KEY=
+GEMINI_API_KEY=
+```
+
+### Run Frontend
+
 ```bash
 npm run dev
 ```
 
-### Production Build
+### Run Backend
+
 ```bash
-npm run build
+cd backend
+npm install
+npm run dev
 ```
+
+---
+
+## 📂 Project Structure
+
+```text
+HiveMind
+│
+├── src/
+│   ├── pages/
+│   ├── components/
+│   ├── utils/
+│   └── contexts/
+│
+├── backend/
+│   ├── server.js
+│   └── .env
+│
+├── android/
+├── public/
+└── README.md
+```
+
+---
+
+## ✨ Highlights
+
+* Full-stack architecture
+* Multi-model AI integration
+* Authentication and cloud storage
+* Android APK release
+* Backend API security layer
+* Real-world deployment workflow
+
+---
+
+## 👩‍💻 Developer
+
+**Swetha R**
+
+Integrated M.Tech Software Engineering, VIT Chennai
+
+GitHub: https://github.com/Swetha197-os
+
+---
+
+HiveMind — *One Question. Many Minds. One Consensus.*
+Compare responses from multiple AI models, discover consensus, and uncover unique perspectives through intelligent analysis.
