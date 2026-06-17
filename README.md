@@ -25,21 +25,23 @@ Download the latest Android APK:
 
 ## 📸 Screenshots
 
+## 📸 Screenshots
+
 ### Landing Page
 
-![Landing Page](screenshots/landing.png)
+![Landing Page](Screenshots/Landing.png)
 
 ### AI Comparison
 
-![AI Comparison](screenshots/comparison.png)
+![AI Comparison](Screenshots/Comparison.png)
 
 ### Consensus Analysis
 
-![Consensus Analysis](screenshots/analysis.png)
+![Consensus Analysis](Screenshots/Analysis.png)
 
 ### Grouping
 
-![Grouping](screenshots/grouping.png)
+![Grouping](Screenshots/Grouping.png)
 
 ## 🎥 Demo
 
