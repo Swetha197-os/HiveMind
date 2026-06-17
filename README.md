@@ -25,8 +25,6 @@ Download the latest Android APK:
 
 ## 📸 Screenshots
 
-## 📸 Screenshots
-
 ### Landing Page
 
 ![Landing Page](Screenshots/Landing.png)
@@ -199,4 +197,5 @@ GitHub: https://github.com/Swetha197-os
 ---
 
 HiveMind — *One Question. Many Minds. One Consensus.*
+
 Compare responses from multiple AI models, discover consensus, and uncover unique perspectives through intelligent analysis.
